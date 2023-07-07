@@ -1,0 +1,6 @@
+.env
+local_tests
+app.log
+todo.txt
+.idea/
+__pycache__/
