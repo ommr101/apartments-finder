@@ -1,12 +1,12 @@
 import dataclasses
 import json
-from typing import Dict, Tuple
+from typing import Tuple
 
 import openai
 from facebook_scraper import Post
 
-from exceptions import ExtractDataFromPostError
-from logger import logger
+from apartments_finder.exceptions import ExtractDataFromPostError
+from apartments_finder.logger import logger
 
 
 @dataclasses.dataclass
@@ -20,7 +20,7 @@ class ApartmentPost:
 
     async def to_telegram_msg(self):
         return f"""
-Found the following apartment - 
+Found the following apartment -
 
 post_original_text
 {self.post_original_text}
@@ -69,9 +69,9 @@ class ApartmentPostParser:
     ]
 
     async def parse(self, post: Post):
-        post_original_text = post['original_text']
-        post_url = post['post_url']
-        post_date = str(post['time'])
+        post_original_text = post["original_text"]
+        post_url = post["post_url"]
+        post_date = str(post["time"])
 
         rooms, location, rent = await self._extract_data_from_post(post_original_text)
 
@@ -81,7 +81,7 @@ class ApartmentPostParser:
             post_date=post_date,
             rooms=rooms,
             location=location,
-            rent=rent
+            rent=rent,
         )
 
         logger.info(
@@ -97,10 +97,12 @@ class ApartmentPostParser:
         return apartment_post
 
     async def _extract_data_from_post(self, text) -> Tuple:
-        messages = [{
-            "role": "user",
-            "content": f"Can you extract from the text the number of rooms, location and rent? \n {text}"
-        }]
+        messages = [
+            {
+                "role": "user",
+                "content": f"Can you extract from the text the number of rooms, location and rent? \n {text}",
+            }
+        ]
 
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613",
@@ -117,19 +119,27 @@ class ApartmentPostParser:
             function_args = json.loads(response_message["function_call"]["arguments"])
             logger.info(f"Extracted the following data from the post - {function_args}")
 
-            rooms = float(function_args.get('rooms') or 0)
+            rooms = float(function_args.get("rooms") or 0)
             if not rooms:
-                logger.warning("Could not extract number of rooms from the post, setting it to 0")
+                logger.warning(
+                    "Could not extract number of rooms from the post, setting it to 0"
+                )
 
-            location = function_args.get('location') or 'none'
+            location = function_args.get("location") or "none"
             if not location:
-                logger.info("Could not extract location from the post, setting it to none")
+                logger.info(
+                    "Could not extract location from the post, setting it to none"
+                )
 
-            rent = int(function_args.get('rent') or 0)
+            rent = int(function_args.get("rent") or 0)
             if not rent:
                 logger.info("Could not extract rent from the post, setting it to 0")
 
             return rooms, location, rent
         except Exception:
-            logger.exception(f"Openai response failed to parse correctly the following text - \n {text}")
-            raise ExtractDataFromPostError(f"Could not extract data from post text - \n {text}")
+            logger.exception(
+                f"Openai response failed to parse correctly the following text - \n {text}"
+            )
+            raise ExtractDataFromPostError(
+                f"Could not extract data from post text - \n {text}"
+            )
