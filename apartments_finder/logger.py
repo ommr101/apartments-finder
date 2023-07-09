@@ -11,7 +11,7 @@ stdout_handler.setFormatter(
 )
 logger.addHandler(stdout_handler)
 
-file_handler = logging.FileHandler("../app.log", mode="w")
+file_handler = logging.FileHandler("../app.log", mode="w", encoding='utf-8')
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(
     logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")

@@ -96,14 +96,20 @@ class ApartmentPostEnricher:
 
             function_args_parsed = json.loads(response_message["function_call"]["arguments"])
 
+            if not function_args_parsed.get("rooms") or \
+               not function_args_parsed.get("location") or \
+               not function_args_parsed.get("rent"):
+                logger.warning(f"Some data could not be parsed out "
+                               f"of the original text - {apartment_post.post_original_text}")
+
             rooms = float(function_args_parsed.get("rooms") or 0)
             if not rooms:
                 logger.warning(
                     "Could not extract number of rooms from the post, setting it to 0"
                 )
 
-            location = function_args_parsed.get("location") or "none"
-            if not location:
+            location = function_args_parsed.get("location") or "unknown"
+            if not location or location == "unknown":
                 logger.info(
                     "Could not extract location from the post, setting it to none"
                 )

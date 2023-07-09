@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import Set
 
 from dotenv import load_dotenv
 
@@ -19,12 +19,12 @@ class Config:
 
     FACEBOOK_USERNAME: str = os.environ["FACEBOOK_USERNAME"]
     FACEBOOK_PASSWORD: str = os.environ["FACEBOOK_PASSWORD"]
-    FACEBOOK_GROUPS: List[str] = [
+    FACEBOOK_GROUPS: Set[str] = {
         v.strip() for v in os.environ["FACEBOOK_GROUPS"].split(",") if v
-    ]
+    }
 
     MAX_TEXT_LEN: int = 600
-    MAX_HOURS_DIFFERENCE: int = 4
+    MAX_HOURS_DIFFERENCE: int = 9
 
 
 config = Config()

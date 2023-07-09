@@ -25,7 +25,7 @@ class FacebookGroupsScraper:
     async def get_posts(
         self,
         group_ids: List[str],
-        posts_per_group_limit: int = 3,
+        posts_per_group_limit: int = 5,
         total_posts_limit: int = 30,
     ) -> AsyncIterator[Post]:
         total_posts_counter = 0
@@ -51,7 +51,10 @@ class FacebookGroupsScraper:
                     logger.info(
                         "Total posts per group limit reached. Moving to next group id..."
                     )
-                    continue
+                    break
+
+            # Remove credentials from config in order to avoid re-authentication
+            self._default_config.pop('credentials', None)
 
             sleep_duration = random.randint(1, 5)
             logger.info(

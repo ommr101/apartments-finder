@@ -18,27 +18,28 @@ facebook_groups_scraper = FacebookGroupsScraper(
 apartment_post_parser = ApartmentPostEnricher()
 
 apartment_filters = [
-    # ApartmentFilter(
-    #     min_rooms=0,
-    #     max_rooms=3,
-    #     min_rent=4000,
-    #     max_rent=5500
-    # ),
-    ApartmentFilter(min_rooms=0, max_rooms=5, min_rent=1000, max_rent=20000)
+    ApartmentFilter(
+        min_rooms=2,
+        max_rooms=3,
+        min_rent=4000,
+        max_rent=5500
+    )
 ]
 apartment_post_filter = ApartmentPostFilter()
 
 
 async def main():
     apartment_filters_formatted = "\n".join([str(a) for a in apartment_filters])
-    facebook_groups_formatted = "\n".join([str(f) for f in config.FACEBOOK_GROUPS])
+    facebook_groups_formatted = "\n ".join([str(f) for f in config.FACEBOOK_GROUPS])
     logger.info(
-        "Starting run...\n"
-        f"Configured apartment filters - \n {apartment_filters_formatted}\n"
-        f"Configured facebook groups - \n {facebook_groups_formatted}\n"
-        f"Configured post filters - \n "
-        f"{config.MAX_TEXT_LEN=}\n"
-        f"{config.MAX_HOURS_DIFFERENCE=}\n"
+        "Starting run...\n\n"
+        f"Configured apartment filters - \n"
+        f" {apartment_filters_formatted}\n"
+        f"Configured facebook groups - \n"
+        f" {facebook_groups_formatted}\n"
+        f"Configured post filters -\n "
+        f" {config.MAX_TEXT_LEN=}\n"
+        f" {config.MAX_HOURS_DIFFERENCE=}\n"
     )
 
     try:
@@ -82,10 +83,10 @@ async def main():
     except Exception:  # pylint: disable=W0718
         logger.exception("Unexpected error - stopping execution...")
 
-    with open("../app.log", "r", encoding="utf-8") as f:
-        logs = "\n".join(f.readlines())
-        await bot.send_message(
-            text=logs, chat_id=config.TELEGRAM_BOT_APARTMENTS_LOGS_GROUP_CHAT_ID
+    with open("../app.log", 'rb') as f:
+        await bot.send_document(
+            chat_id=config.TELEGRAM_BOT_APARTMENTS_LOGS_GROUP_CHAT_ID,
+            document=f
         )
 
 
