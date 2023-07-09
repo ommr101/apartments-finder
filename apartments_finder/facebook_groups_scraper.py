@@ -17,8 +17,9 @@ class FacebookGroupsScraper:
                 "comments": False,
                 "reactors": False,
                 "allow_extra_requests": False,
-                "posts_per_page": 10,
+                "posts_per_page": 10
             },
+            "group_sort_setting": 'CHRONOLOGICAL'
         }
 
     async def get_posts(

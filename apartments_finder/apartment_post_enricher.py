@@ -1,22 +1,24 @@
 import dataclasses
 import json
-from typing import Tuple
+from datetime import datetime
 
 import openai
-from facebook_scraper import Post
+from config import config
 
-from apartments_finder.exceptions import ExtractDataFromPostError
+from apartments_finder.exceptions import EnrichApartmentPostError
 from apartments_finder.logger import logger
+
+openai.api_key = config.OPENAI_API_KEY
 
 
 @dataclasses.dataclass
 class ApartmentPost:
     post_original_text: str
     post_url: str
-    post_date: str
-    rooms: float
-    location: str
-    rent: int
+    post_date: datetime
+    rooms: float = 0
+    location: str = ''
+    rent: int = 0
 
     async def to_telegram_msg(self):
         return f"""
@@ -42,7 +44,7 @@ rent
         """
 
 
-class ApartmentPostParser:
+class ApartmentPostEnricher:
     functions = [
         {
             "name": "build_apartment_data",
@@ -68,39 +70,12 @@ class ApartmentPostParser:
         }
     ]
 
-    async def parse(self, post: Post):
-        post_original_text = post["original_text"]
-        post_url = post["post_url"]
-        post_date = str(post["time"])
-
-        rooms, location, rent = await self._extract_data_from_post(post_original_text)
-
-        apartment_post = ApartmentPost(
-            post_original_text=post_original_text,
-            post_url=post_url,
-            post_date=post_date,
-            rooms=rooms,
-            location=location,
-            rent=rent,
-        )
-
-        logger.info(
-            f"Successfully extracted apartment post - \n"
-            f"{apartment_post.post_original_text=}\n\n"
-            f"{apartment_post.post_url=}\n\n"
-            f"{apartment_post.post_date}\n\n"
-            f"{apartment_post.rooms}\n\n"
-            f"{apartment_post.location}\n\n"
-            f"{apartment_post.rent}\n\n"
-        )
-
-        return apartment_post
-
-    async def _extract_data_from_post(self, text) -> Tuple:
+    async def enrich(self, apartment_post: ApartmentPost):
         messages = [
             {
                 "role": "user",
-                "content": f"Can you extract from the text the number of rooms, location and rent? \n {text}",
+                "content": f"Can you extract from the text the number of rooms, location and rent? \n"
+                           f"{apartment_post.post_original_text}",
             }
         ]
 
@@ -116,30 +91,36 @@ class ApartmentPostParser:
             if not response_message.get("function_call"):
                 raise KeyError("'function_call' key in openai response was not found")
 
-            function_args = json.loads(response_message["function_call"]["arguments"])
-            logger.info(f"Extracted the following data from the post - {function_args}")
+            function_args_raw = response_message["function_call"]["arguments"]
+            logger.info(f"Extracted the following data from the post - {function_args_raw}")
 
-            rooms = float(function_args.get("rooms") or 0)
+            function_args_parsed = json.loads(response_message["function_call"]["arguments"])
+
+            rooms = float(function_args_parsed.get("rooms") or 0)
             if not rooms:
                 logger.warning(
                     "Could not extract number of rooms from the post, setting it to 0"
                 )
 
-            location = function_args.get("location") or "none"
+            location = function_args_parsed.get("location") or "none"
             if not location:
                 logger.info(
                     "Could not extract location from the post, setting it to none"
                 )
 
-            rent = int(function_args.get("rent") or 0)
+            rent = int(function_args_parsed.get("rent") or 0)
             if not rent:
                 logger.info("Could not extract rent from the post, setting it to 0")
 
-            return rooms, location, rent
+            apartment_post.rooms = rooms
+            apartment_post.location = location
+            apartment_post.rent = rent
+
+            return apartment_post
         except Exception:
             logger.exception(
-                f"Openai response failed to parse correctly the following text - \n {text}"
+                f"Openai response failed to parse correctly the following text - \n {apartment_post.post_original_text}"
             )
-            raise ExtractDataFromPostError(
-                f"Could not extract data from post text - \n {text}"
+            raise EnrichApartmentPostError(
+                f"Could not extract data from post text - \n {apartment_post.post_original_text}"
             )
