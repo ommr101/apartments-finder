@@ -26,5 +26,7 @@ class Config:
     MAX_TEXT_LEN: int = 600
     MAX_HOURS_DIFFERENCE: int = 3
 
+    MAX_POSTS_TO_ENRICH_IN_RUN = 20
+
 
 config = Config()

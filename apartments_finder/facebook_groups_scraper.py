@@ -25,8 +25,8 @@ class FacebookGroupsScraper:
     async def get_posts(
         self,
         group_ids: List[str],
-        posts_per_group_limit: int = 7,
-        total_posts_limit: int = 40,
+        posts_per_group_limit: int = 20,
+        total_posts_limit: int = 140,
     ) -> AsyncIterator[Post]:
         total_posts_counter = 0
         for group_id in group_ids:

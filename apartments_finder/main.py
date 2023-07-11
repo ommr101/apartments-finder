@@ -42,6 +42,8 @@ async def main():
         f" {config.MAX_HOURS_DIFFERENCE=}\n"
     )
 
+    enriched_posts = 0
+
     try:
         async for post in facebook_groups_scraper.get_posts(config.FACEBOOK_GROUPS):
             post_original_text = post["original_text"]
@@ -65,6 +67,7 @@ async def main():
                 continue
 
             logger.info("Successfully enriched this apartment with more data")
+            enriched_posts += 1
 
             if not await apartment_post_filter.is_match(apartment_post, apartment_filters):
                 logger.info("Apartment post did not match any filter. Skipping it")
@@ -79,6 +82,11 @@ async def main():
             )
 
             logger.info("Successfully sent this apartment to the telegram bot")
+
+            if enriched_posts > config.MAX_POSTS_TO_ENRICH_IN_RUN:
+                logger.info(f"Enriched {enriched_posts} posts and the limit is {config.MAX_POSTS_TO_ENRICH_IN_RUN}."
+                            f" Stopping run...")
+                break
 
     except Exception:  # pylint: disable=W0718
         logger.exception("Unexpected error - stopping execution...")
