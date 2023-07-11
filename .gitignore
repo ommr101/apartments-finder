@@ -4,3 +4,4 @@ app.log
 todo.txt
 .idea/
 __pycache__/
+/start.bat

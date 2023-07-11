@@ -24,7 +24,7 @@ class Config:
     }
 
     MAX_TEXT_LEN: int = 600
-    MAX_HOURS_DIFFERENCE: int = 9
+    MAX_HOURS_DIFFERENCE: int = 3
 
 
 config = Config()

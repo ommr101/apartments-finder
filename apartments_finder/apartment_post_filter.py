@@ -22,6 +22,11 @@ class ApartmentFilter:
 
 
 class ApartmentPostFilter:
+    WORDS_TO_IGNORE_POST_ON = {
+        'מחפש',
+        'מחפשת'
+    }
+
     async def is_match(self, apartment_post: ApartmentPost, apartment_filters: List[ApartmentFilter]):
         for apartment_filter in apartment_filters:
             if (
@@ -47,5 +52,10 @@ class ApartmentPostFilter:
         if time_diff >= timedelta(hours=config.MAX_HOURS_DIFFERENCE):
             logger.info(f"The post is from {apartment_post.post_date} and is too old")
             return True
+
+        for w in apartment_post.post_original_text:
+            if w in apartment_post.post_original_text:
+                logger.info(f"Found the ignore post on word '{w}'")
+                return True
 
         return False
