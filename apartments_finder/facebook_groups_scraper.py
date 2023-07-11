@@ -29,11 +29,13 @@ class FacebookGroupsScraper:
         total_posts_limit: int = 140,
     ) -> AsyncIterator[Post]:
         total_posts_counter = 0
+        get_posts_config = dict(self._default_config)
+
         for group_id in group_ids:
             posts_per_group_counter = 0
             logger.info(f"Getting posts from group id - {group_id}")
 
-            posts = get_posts(group=group_id, **self._default_config)
+            posts = get_posts(group=group_id, **get_posts_config)
             for post in posts:
                 logger.info(f"Found post id - {post['post_id']}")
 
@@ -54,7 +56,7 @@ class FacebookGroupsScraper:
                     break
 
             # Remove credentials from config in order to avoid re-authentication
-            self._default_config.pop('credentials', None)
+            get_posts_config.pop('credentials', None)
 
             sleep_duration = random.randint(1, 5)
             logger.info(
