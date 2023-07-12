@@ -53,7 +53,7 @@ class ApartmentPostFilter:
             logger.info(f"The post is from {apartment_post.post_date} and is too old")
             return True
 
-        for w in apartment_post.post_original_text:
+        for w in self.WORDS_TO_IGNORE_POST_ON:
             if w in apartment_post.post_original_text:
                 logger.info(f"Found the ignore post on word '{w}'")
                 return True
