@@ -23,16 +23,10 @@ This project aims to scrape data from various Facebook apartments to rent groups
    pip install -r requirements.txt
    ```
 
-3. Set up the .env  file (refer to the [Configuration](#configuration) section).
-
 ## Configuration
 
 
 The `apartments_finder_config.json` configuration file is used to define the settings and filters for the Apartments Finder program. It allows you to customize the parameters for apartment and post filtering.
-
-### Configuration Structure
-
-The configuration file has the following structure:
 
 ```json
 {
