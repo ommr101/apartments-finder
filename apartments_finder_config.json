@@ -1,0 +1,23 @@
+{
+  "apartment_filters": [
+    {
+      "min_rooms": 2,
+      "max_rooms": 3,
+      "min_rent": 4000,
+      "max_rent": 6000
+    }
+  ],
+  "post_filters": [
+    {
+      "words_to_ignore_post_on": [
+        "מחפש",
+        "מחפשת"
+      ],
+      "max_post_minutes_difference": 150,
+      "max_post_text_len": 800
+    }
+  ],
+  "max_posts_to_enrich_in_run": 20,
+  "posts_per_group_limit": 30,
+  "total_posts_limit": 300
+}

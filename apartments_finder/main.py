@@ -4,8 +4,7 @@ import telegram
 
 from apartments_finder.apartment_post_enricher import (ApartmentPost,
                                                        ApartmentPostEnricher)
-from apartments_finder.apartment_post_filter import (ApartmentFilter,
-                                                     ApartmentPostFilter)
+from apartments_finder.apartment_post_filter import (ApartmentPostFilterer)
 from apartments_finder.config import config
 from apartments_finder.exceptions import EnrichApartmentPostError
 from apartments_finder.facebook_groups_scraper import FacebookGroupsScraper
@@ -17,20 +16,13 @@ facebook_groups_scraper = FacebookGroupsScraper(
 )
 apartment_post_parser = ApartmentPostEnricher()
 
-apartment_filters = [
-    ApartmentFilter(
-        min_rooms=2,
-        max_rooms=3,
-        min_rent=4000,
-        max_rent=5500
-    )
-]
-apartment_post_filter = ApartmentPostFilter()
+apartment_post_filterer = ApartmentPostFilterer()
 
 
 async def main():
-    apartment_filters_formatted = "\n".join([str(a) for a in apartment_filters])
+    apartment_filters_formatted = "\n".join([str(a) for a in config.APARTMENT_FILTERS])
     facebook_groups_formatted = "\n ".join([str(f) for f in config.FACEBOOK_GROUPS])
+    post_filters_formatted = "\n ".join([str(f) for f in config.POST_FILTERS])
     logger.info(
         "Starting run...\n\n"
         f"Configured apartment filters - \n"
@@ -38,14 +30,19 @@ async def main():
         f"Configured facebook groups - \n"
         f" {facebook_groups_formatted}\n"
         f"Configured post filters -\n "
-        f" {config.MAX_TEXT_LEN=}\n"
-        f" {config.MAX_HOURS_DIFFERENCE=}\n"
+        f" {post_filters_formatted}\n"
     )
 
     enriched_posts = 0
 
     try:
-        async for post in facebook_groups_scraper.get_posts(config.FACEBOOK_GROUPS):
+        posts_iter = facebook_groups_scraper.get_posts(
+            config.FACEBOOK_GROUPS,
+            config.POSTS_PER_GROUP_LIMIT,
+            config.TOTAL_POSTS_LIMIT
+        )
+
+        async for post in posts_iter:
             post_original_text = post["original_text"]
             post_url = post["post_url"]
             post_date = post["time"]
@@ -56,7 +53,7 @@ async def main():
                 post_date=post_date
             )
 
-            if await apartment_post_filter.should_ignore_post(apartment_post):
+            if await apartment_post_filterer.should_ignore_post(apartment_post, config.POST_FILTERS):
                 logger.info("Post should be ignored. Skipping it...")
                 continue
 
@@ -69,7 +66,7 @@ async def main():
             logger.info("Successfully enriched this apartment with more data")
             enriched_posts += 1
 
-            if not await apartment_post_filter.is_match(apartment_post, apartment_filters):
+            if not await apartment_post_filterer.is_match(apartment_post, config.APARTMENT_FILTERS):
                 logger.info("Apartment post did not match any filter. Skipping it")
                 continue
 
@@ -91,11 +88,12 @@ async def main():
     except Exception:  # pylint: disable=W0718
         logger.exception("Unexpected error - stopping execution...")
 
-    with open("../app.log", 'rb') as f:
-        await bot.send_document(
-            chat_id=config.TELEGRAM_BOT_APARTMENTS_LOGS_GROUP_CHAT_ID,
-            document=f
-        )
+    if config.TELEGRAM_BOT_APARTMENTS_LOGS_GROUP_CHAT_ID:
+        with open("../app.log", 'rb') as f:
+            await bot.send_document(
+                chat_id=config.TELEGRAM_BOT_APARTMENTS_LOGS_GROUP_CHAT_ID,
+                document=f
+            )
 
 
 if __name__ == "__main__":

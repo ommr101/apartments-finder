@@ -1,47 +1,13 @@
-import dataclasses
 import json
-from datetime import datetime
 
 import openai
 from config import config
 
+from modules import ApartmentPost
 from apartments_finder.exceptions import EnrichApartmentPostError
 from apartments_finder.logger import logger
 
 openai.api_key = config.OPENAI_API_KEY
-
-
-@dataclasses.dataclass
-class ApartmentPost:
-    post_original_text: str
-    post_url: str
-    post_date: datetime
-    rooms: float = 0
-    location: str = ''
-    rent: int = 0
-
-    async def to_telegram_msg(self):
-        return f"""
-Found the following apartment -
-
-post_original_text
-{self.post_original_text}
-
-post_url
-{self.post_url}
-
-post_date
-{self.post_date}
-
-rooms
-{self.rooms}
-
-location
-{self.location}
-
-rent
-{self.rent}
-        """
 
 
 class ApartmentPostEnricher:
@@ -97,8 +63,8 @@ class ApartmentPostEnricher:
             function_args_parsed = json.loads(response_message["function_call"]["arguments"])
 
             if not function_args_parsed.get("rooms") or \
-               not function_args_parsed.get("location") or \
-               not function_args_parsed.get("rent"):
+                    not function_args_parsed.get("location") or \
+                    not function_args_parsed.get("rent"):
                 logger.warning(f"Some data could not be parsed out "
                                f"of the original text - {apartment_post.post_original_text}")
 
