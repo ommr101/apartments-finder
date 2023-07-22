@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List
 
-from modules import ApartmentFilter, PostFilter, ApartmentPost
+from entities import ApartmentFilter, PostFilter, ApartmentPost
 from apartments_finder.logger import logger
 
 

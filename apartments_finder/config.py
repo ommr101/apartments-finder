@@ -9,7 +9,7 @@ from apartment_post_filter import ApartmentFilter, PostFilter
 load_dotenv("../.env")
 
 with open('../apartments_finder_config.json', encoding='utf-8') as f:
-    apartments_finder_config: Dict[str, Any] = json.load(f)
+    _apartments_finder_config: Dict[str, Any] = json.load(f)
 
 
 class Config:
@@ -32,13 +32,13 @@ class Config:
     MAX_TEXT_LEN: int = 800
     MAX_MINUTES_DIFFERENCE: int = 150
 
-    APARTMENT_FILTERS = [ApartmentFilter(**f) for f in apartments_finder_config['apartment_filters']]
-    POST_FILTERS = [PostFilter(**f) for f in apartments_finder_config['post_filters']]
+    APARTMENT_FILTERS = [ApartmentFilter(**f) for f in _apartments_finder_config['apartment_filters']]
+    POST_FILTERS = [PostFilter(**f) for f in _apartments_finder_config['post_filters']]
 
-    MAX_POSTS_TO_ENRICH_IN_RUN = apartments_finder_config['max_posts_to_enrich_in_run']
+    MAX_POSTS_TO_ENRICH_IN_RUN = _apartments_finder_config['max_posts_to_enrich_in_run']
 
-    POSTS_PER_GROUP_LIMIT = apartments_finder_config['posts_per_group_limit']
-    TOTAL_POSTS_LIMIT = apartments_finder_config['total_posts_limit']
+    POSTS_PER_GROUP_LIMIT = _apartments_finder_config['posts_per_group_limit']
+    TOTAL_POSTS_LIMIT = _apartments_finder_config['total_posts_limit']
 
 
 config = Config()

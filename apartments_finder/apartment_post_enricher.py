@@ -3,7 +3,7 @@ import json
 import openai
 from config import config
 
-from modules import ApartmentPost
+from entities import ApartmentPost
 from apartments_finder.exceptions import EnrichApartmentPostError
 from apartments_finder.logger import logger
 
